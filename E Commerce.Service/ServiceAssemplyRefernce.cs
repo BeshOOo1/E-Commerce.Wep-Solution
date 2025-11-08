@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace E_Commerce.Domain.Contract
+namespace E_Commerce.Service
 {
-    public interface IDataIntializer
+    public class ServiceAssemplyRefernce
     {
-        Task IntializeAsync();
     }
 }

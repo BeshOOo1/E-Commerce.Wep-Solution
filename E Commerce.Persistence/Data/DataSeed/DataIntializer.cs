@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace E_Commerce.Persistence.Data.DataSeed
 {
@@ -21,30 +22,32 @@ namespace E_Commerce.Persistence.Data.DataSeed
         {
             _dbConext = dbConext;
         }
-        public void Intialize()
+        public async Task IntializeAsync()
         {
             try
             {
-                var HasProducts = _dbConext.Products.Any();
-                var HasBrands = _dbConext.ProductBrands.Any();
-                var HasTypes = _dbConext.ProductTypes.Any();
+                var HasProducts = await _dbConext.Products.AnyAsync();
+                var HasProductBrands = await _dbConext.ProductBrands.AnyAsync();
+                var HasProductTypes = await _dbConext.ProductTypes.AnyAsync();
 
-                if (HasBrands && HasTypes  && HasProducts) return;
-               
-                if(!HasBrands)
+                if (HasProducts && HasProductBrands && HasProductTypes) return;
+
+                if (!HasProductTypes)
                 {
-                    SeedDataFromJson<ProductBrand, int>("brands.json", _dbConext.ProductBrands);
+                    await SeedDataFromJsonAsync<ProductType, int>("types.json", _dbConext.ProductTypes);
                 }
-                if(!HasTypes)
+
+                if (!HasProductBrands)
                 {
-                    SeedDataFromJson<ProductType, int>("types.json", _dbConext.ProductTypes);
+                   await SeedDataFromJsonAsync<ProductBrand, int>("brands.json", _dbConext.ProductBrands);
                 }
-                _dbConext.SaveChanges();
+
+                 await _dbConext.SaveChangesAsync();
                 if(!HasProducts)
                 {
-                    SeedDataFromJson<Product, int>("products.json", _dbConext.Products);
+                   await SeedDataFromJsonAsync<Product, int>("products.json", _dbConext.Products);
                 }
-                _dbConext.SaveChanges();
+                await _dbConext.SaveChangesAsync();
 
             }
             catch(Exception ex) 
@@ -53,7 +56,7 @@ namespace E_Commerce.Persistence.Data.DataSeed
             }
         }
 
-        private void SeedDataFromJson<T ,TKey>(string FileName,DbSet<T> dbset) where T :BaseEntity<TKey>
+        private async Task SeedDataFromJsonAsync<T ,TKey>(string FileName,DbSet<T> dbset) where T :BaseEntity<TKey>
         {
             // D:\BackEnd.Net\Course\API\Project_API\E Commerce.Wep Solution\E Commerce.Persistence\Data\DataSeed\JSONFiles\brands.json
 
@@ -63,16 +66,16 @@ namespace E_Commerce.Persistence.Data.DataSeed
 
             try
             {
-                using var dataStreams = File.OpenRead(FilePath);
+                using var DataStreams = File.OpenRead(FilePath);
 
-                var data = JsonSerializer.Deserialize<List<T>>(dataStreams, new JsonSerializerOptions 
+                var Data = await JsonSerializer.DeserializeAsync<List<T>>(DataStreams, new JsonSerializerOptions 
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
-                if(data is not null)
+                if(Data != null)
                 {
-                    dbset.AddRange(data);
+                    dbset.AddRange(Data);
                 }
             }
             catch(Exception ex) 

@@ -1,14 +1,19 @@
 using E_Commerce.Domain.Contract;
 using E_Commerce.Persistence.Data.DataSeed;
 using E_Commerce.Persistence.Data.DbContexts;
+using E_Commerce.Persistence.Repositories;
+using E_Commerce.Service;
+using E_Commerce.Service.Abstracion;
+using E_Commerce.Service.MappingProfiles;
 using E_Commerce.Wep.Extensions;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace E_Commerce.Wep
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -26,14 +31,21 @@ namespace E_Commerce.Wep
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
             builder.Services.AddScoped<IDataIntializer, DataIntializer>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddAutoMapper(typeof(ServiceAssemplyRefernce).Assembly);
+
+            //builder.Services.AddAutoMapper(X => X.LicenseKey = "", typeof(ProductProfile).Assembly);
+            builder.Services.AddScoped<IProductService, ProductService>();
+
+            builder.Services.AddTransient<ProductPictureUrlResolver>();
             #endregion
 
             var app = builder.Build();
 
             #region Data Seed - Apply Migration
 
-            app.MigarateDatbase()
-               .SeedDatabase();
+            await app.MigarateDatbaseAsync();
+            await app.SeedDatabaseAsync();
 
             #endregion
 
@@ -48,10 +60,12 @@ namespace E_Commerce.Wep
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+
             app.MapControllers();
             #endregion
 
-            app.Run();
+           await app.RunAsync();
         }
     }
 }
