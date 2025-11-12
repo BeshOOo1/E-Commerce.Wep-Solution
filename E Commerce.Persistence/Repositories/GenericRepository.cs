@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,9 +23,27 @@ namespace E_Commerce.Persistence.Repositories
         }
         public async Task AddAsync(TEntity entity) => await _dbConext.Set<TEntity>().AddAsync(entity);
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync() => await _dbConext.Set<TEntity>().ToListAsync();
+        public async Task<int> CountAsync(ISpecifications<TEntity, TKey> specifications)
+        {
+            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), specifications).CountAsync();
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        {    
+            return await _dbConext.Set<TEntity>().ToListAsync();
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync(ISpecifications<TEntity, TKey> specifications)
+        {
+            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), specifications).ToListAsync();
+        }
 
         public async Task<TEntity?> GetByIdAsync(TKey id) => await _dbConext.Set<TEntity>().FindAsync(id);
+
+        public async Task<TEntity?> GetByIdAsync(ISpecifications<TEntity, TKey> specifications)
+        {
+            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), specifications).FirstOrDefaultAsync();
+        }
 
         public void Remove(TEntity entity) => _dbConext.Set<TEntity>().Remove(entity);
 

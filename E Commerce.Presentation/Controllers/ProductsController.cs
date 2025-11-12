@@ -1,4 +1,5 @@
 ﻿using E_Commerce.Service.Abstracion;
+using E_Commerce.Shared;
 using E_Commerce.Shared.DTOs.ProductDTOs;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -21,9 +22,9 @@ namespace E_Commerce.Presentation.Controllers
             _productService = productService;
         }
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetProducts()
+        public async Task<ActionResult<PaginatedResult<ProductDTO>>> GetProducts([FromQuery]ProductQueryParams queryParams)
         {
-            var Products = await _productService.GetAllProductAsync();
+            var Products = await _productService.GetAllProductAsync(queryParams);
             return Ok(Products);
         }
         [HttpGet("{id}")]
