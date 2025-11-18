@@ -7,6 +7,7 @@ using E_Commerce.Service.Abstracion;
 using E_Commerce.Service.MappingProfiles;
 using E_Commerce.Wep.Extensions;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using System.Threading.Tasks;
 
 namespace E_Commerce.Wep
@@ -38,6 +39,12 @@ namespace E_Commerce.Wep
             builder.Services.AddScoped<IProductService, ProductService>();
 
             builder.Services.AddTransient<ProductPictureUrlResolver>();
+            builder.Services.AddSingleton<IConnectionMultiplexer>(SP =>
+            {
+                return ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("RedisConnection")!);
+            });
+            builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+            builder.Services.AddScoped<IBasketService, BasketService>();
             #endregion
 
             var app = builder.Build();
