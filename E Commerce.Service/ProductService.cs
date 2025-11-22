@@ -2,6 +2,7 @@
 using E_Commerce.Domain.Contract;
 using E_Commerce.Domain.Entities.ProductModule;
 using E_Commerce.Service.Abstracion;
+using E_Commerce.Service.Exceptions;
 using E_Commerce.Service.Specifications;
 using E_Commerce.Shared;
 using E_Commerce.Shared.DTOs.ProductDTOs;
@@ -50,8 +51,9 @@ namespace E_Commerce.Service
         public async Task<ProductDTO> GetProductByIdAsync(int id)
         {
             var Spec = new ProductWithTypeAndBrandSpecification(id);
-
             var Product = await _unitOfWork.GetRepository<Product, int>().GetByIdAsync(id);
+            if (Product == null)
+                throw new ProductNotFoundException(id);
             return _mapper.Map<ProductDTO>(Product);
         }
 

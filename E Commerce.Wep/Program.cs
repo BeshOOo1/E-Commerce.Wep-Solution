@@ -5,7 +5,10 @@ using E_Commerce.Persistence.Repositories;
 using E_Commerce.Service;
 using E_Commerce.Service.Abstracion;
 using E_Commerce.Service.MappingProfiles;
+using E_Commerce.Wep.CustomMiddleWares;
 using E_Commerce.Wep.Extensions;
+using E_Commerce.Wep.Factories;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 using System.Threading.Tasks;
@@ -45,6 +48,12 @@ namespace E_Commerce.Wep
             });
             builder.Services.AddScoped<IBasketRepository, BasketRepository>();
             builder.Services.AddScoped<IBasketService, BasketService>();
+            builder.Services.AddScoped<ICacheRepository, CacheRepository>();
+            builder.Services.AddScoped<ICacheService, CacheService>();
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = ApiResponseFactory.GenerateApiValidationResponse;
+            });
             #endregion
 
             var app = builder.Build();
@@ -57,6 +66,27 @@ namespace E_Commerce.Wep
             #endregion
 
             #region Configure the HTTP request pipeline.
+
+            //app.Use(async (Context, Next) =>
+            //{
+            //    try
+            //    {
+            //        await Next.Invoke();
+            //    }
+            //    catch(Exception ex)
+            //    {
+            //        Console.WriteLine(ex.Message);
+            //        Context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            //        await Context.Response.WriteAsJsonAsync(new
+            //        {
+            //            StatusCode = StatusCodes.Status500InternalServerError,
+            //            Error = $"An UnExpected Error Occured : {ex.Message}"
+            //        });
+
+            //    }
+            //});
+
+            app.UseMiddleware<ExceptionHandlerMiddleWare>();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

@@ -2,6 +2,7 @@
 using E_Commerce.Domain.Contract;
 using E_Commerce.Domain.Entities.BasketModule;
 using E_Commerce.Service.Abstracion;
+using E_Commerce.Service.Exceptions;
 using E_Commerce.Shared.DTOs.BasketDTOs;
 using System;
 using System.Collections.Generic;
@@ -28,11 +29,13 @@ namespace E_Commerce.Service
             return _mapper.Map<BasketDTO>(CreatedOrUpdatedBasket);
         }
 
-        public async Task<bool> DeleteBasketAsync(string id) => await _basketRepository.DeleteBasketAsync(id);
+        public async Task<bool> DeleteBasketAsync(string basketId) => await _basketRepository.DeleteBasketAsync(basketId);
 
-        public async Task<BasketDTO> GetBasketAsync(string id)
+        public async Task<BasketDTO> GetBasketAsync(string basketId)
         {
-            var Basket = await _basketRepository.GetBasketAsync(id);
+            var Basket = await _basketRepository.GetBasketAsync(basketId);
+            if (Basket == null)
+                throw new BasketNotFoundException(basketId);
             return _mapper.Map<BasketDTO>(Basket);
         }
     }
