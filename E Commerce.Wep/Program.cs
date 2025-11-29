@@ -1,6 +1,9 @@
 using E_Commerce.Domain.Contract;
+using E_Commerce.Domain.Entities.IdentityModule;
 using E_Commerce.Persistence.Data.DataSeed;
 using E_Commerce.Persistence.Data.DbContexts;
+using E_Commerce.Persistence.IdentityData.DataSeed;
+using E_Commerce.Persistence.IdentityData.DbContexts;
 using E_Commerce.Persistence.Repositories;
 using E_Commerce.Service;
 using E_Commerce.Service.Abstracion;
@@ -8,6 +11,7 @@ using E_Commerce.Service.MappingProfiles;
 using E_Commerce.Wep.CustomMiddleWares;
 using E_Commerce.Wep.Extensions;
 using E_Commerce.Wep.Factories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -34,7 +38,8 @@ namespace E_Commerce.Wep
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-            builder.Services.AddScoped<IDataIntializer, DataIntializer>();
+            builder.Services.AddKeyedScoped<IDataIntializer, DataIntializer>("Default");
+            builder.Services.AddKeyedScoped<IDataIntializer, IdentityDataIntializer>("Identity");
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddAutoMapper(typeof(ServiceAssemplyRefernce).Assembly);
 
@@ -54,6 +59,15 @@ namespace E_Commerce.Wep
             {
                 options.InvalidModelStateResponseFactory = ApiResponseFactory.GenerateApiValidationResponse;
             });
+            builder.Services.AddDbContext<StoreIdentityDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+            });
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            //builder.Services.AddIdentity<ApplicationUser, IdentityRole>();
+            builder.Services.AddIdentityCore<ApplicationUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<StoreIdentityDbContext>();
             #endregion
 
             var app = builder.Build();
@@ -61,30 +75,13 @@ namespace E_Commerce.Wep
             #region Data Seed - Apply Migration
 
             await app.MigarateDatbaseAsync();
+            await app.MigarateIdentityDatbaseAsync();
             await app.SeedDatabaseAsync();
+            await app.SeedIdentityDatabaseAsync();
 
             #endregion
 
             #region Configure the HTTP request pipeline.
-
-            //app.Use(async (Context, Next) =>
-            //{
-            //    try
-            //    {
-            //        await Next.Invoke();
-            //    }
-            //    catch(Exception ex)
-            //    {
-            //        Console.WriteLine(ex.Message);
-            //        Context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            //        await Context.Response.WriteAsJsonAsync(new
-            //        {
-            //            StatusCode = StatusCodes.Status500InternalServerError,
-            //            Error = $"An UnExpected Error Occured : {ex.Message}"
-            //        });
-
-            //    }
-            //});
 
             app.UseMiddleware<ExceptionHandlerMiddleWare>();
 

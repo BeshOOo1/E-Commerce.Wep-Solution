@@ -1,4 +1,5 @@
 ﻿using E_Commerce.Shared;
+using E_Commerce.Shared.CommonResult;
 using E_Commerce.Shared.DTOs.ProductDTOs;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace E_Commerce.Service.Abstracion
     {
         Task<PaginatedResult<ProductDTO>> GetAllProductAsync(ProductQueryParams queryParams);
 
-        Task<ProductDTO> GetProductByIdAsync(int id);
+        Task<Result<ProductDTO>> GetProductByIdAsync(int id);
 
         Task<IEnumerable<BrandDTO>> GetAllBrandsAsync();
 

@@ -23,9 +23,9 @@ namespace E_Commerce.Persistence.Repositories
         }
         public async Task AddAsync(TEntity entity) => await _dbConext.Set<TEntity>().AddAsync(entity);
 
-        public async Task<int> CountAsync(ISpecifications<TEntity, TKey> specifications)
+        public async Task<int> CountAsync(ISpecifications<TEntity, TKey> Spec)
         {
-            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), specifications).CountAsync();
+            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), Spec).CountAsync();
         }
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
@@ -33,16 +33,16 @@ namespace E_Commerce.Persistence.Repositories
             return await _dbConext.Set<TEntity>().ToListAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(ISpecifications<TEntity, TKey> specifications)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(ISpecifications<TEntity, TKey> Spec)
         {
-            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), specifications).ToListAsync();
+            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), Spec).ToListAsync();
         }
 
         public async Task<TEntity?> GetByIdAsync(TKey id) => await _dbConext.Set<TEntity>().FindAsync(id);
 
-        public async Task<TEntity?> GetByIdAsync(ISpecifications<TEntity, TKey> specifications)
+        public async Task<TEntity?> GetByIdAsync(ISpecifications<TEntity, TKey> Spec)
         {
-            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), specifications).FirstOrDefaultAsync();
+            return await SpecificationsEvaluater.CreateQuery(_dbConext.Set<TEntity>(), Spec).FirstOrDefaultAsync();
         }
 
         public void Remove(TEntity entity) => _dbConext.Set<TEntity>().Remove(entity);
